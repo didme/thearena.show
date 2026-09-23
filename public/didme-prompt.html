@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3c938">
+  <title>Голосовое интервью. Юнг. Соционика</title>
+  <style>
+    :root { --yellow: #f3c938; --ink: #191919; --muted: #8a8478; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f4ee;
+      color: var(--ink);
+      -webkit-text-size-adjust: 100%;
+    }
+    main { max-width: 640px; margin: 0 auto; padding: 26px 18px 48px; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e1d6;
+      border-radius: 24px;
+      padding: 24px 20px 26px;
+      box-shadow: 0 12px 35px rgba(41, 35, 20, .08);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: clamp(11.5px, 4vw, 22px);
+      line-height: 1.1;
+      letter-spacing: -.4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    button, a.action {
+      width: 100%;
+      min-height: 60px;
+      border-radius: 16px;
+      border: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 14px 18px;
+      font: 700 17px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-decoration: none;
+      color: var(--ink);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .08s ease, background .2s ease;
+    }
+    button:active, a.action:active { transform: scale(.985); }
+
+    a.cta {
+      background: #fff;
+      border: 2px solid var(--ink);
+      box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+    a.cta .logo { width: 22px; height: 22px; flex: 0 0 22px; display: block; object-fit: contain; }
+    #copy { background: var(--yellow); color: #17140a; min-height: 50px; font-size: 15.5px; }
+    #copy.copied { background: #2a9d66; color: #fff; }
+
+    .counter {
+      text-align: center; font-size: 14px; color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .counter b { color: #d98a00; }
+
+    /* ---------- Voice-mode visual ---------- */
+    .voice { margin-top: 8px; }
+    .mockwrap { max-width: 330px; margin: 0 auto; }
+    .mock {
+      display: flex; align-items: center; gap: 10px;
+      background: #f6f4ee; border-radius: 999px;
+      padding: 11px 12px;
+      border: 1px solid #ece7da;
+    }
+    .mock .plus { font-size: 22px; color: #7d7d7d; width: 22px; text-align: center; }
+    .mock .ph { flex: 1; color: #9a9a9a; font-size: 15px; }
+    .mock .mic { width: 20px; height: 20px; opacity: .55; }
+    .mock .voicebtn {
+      width: 34px; height: 34px; border-radius: 50%; flex: 0 0 34px;
+      background: var(--yellow);
+      display: flex; align-items: center; justify-content: center;
+      gap: 2.5px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mock .voicebtn:focus-visible { outline: 3px solid #17140a; outline-offset: 3px; }
+    .mock .voicebtn span { width: 2.5px; border-radius: 2px; background: #17140a; }
+    .mock .voicebtn span:nth-child(1){ height: 8px; }
+    .mock .voicebtn span:nth-child(2){ height: 15px; }
+    .mock .voicebtn span:nth-child(3){ height: 10px; }
+    .mock .voicebtn span:nth-child(4){ height: 6px; }
+    /* arrow sits under the yellow button: right-aligned inside mockwrap */
+    .arrow {
+      display: block; width: 40px; height: 48px;
+      margin: 6px 9px 0 auto;
+      animation: point 1s ease-in-out infinite alternate;
+    }
+    @keyframes point { to { transform: translateY(-6px); } }
+    @media (prefers-reduced-motion: reduce) { .arrow, .ig-arrow { animation: none; } }
+    .cap { margin: 4px 0 0; text-align: center; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+
+    /* ---------- In-app browser overlay ---------- */
+    .ig {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      background: rgba(20,18,10,.75); backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      padding: max(14px, env(safe-area-inset-top)) 16px 16px;
+    }
+    .ig.show { display: block; }
+    .ig-arrow {
+      position: absolute; top: max(6px, env(safe-area-inset-top)); right: 14px;
+      font-size: 46px; color: var(--yellow); line-height: 1;
+      animation: nudge 1s ease-in-out infinite alternate;
+      text-shadow: 0 2px 8px rgba(0,0,0,.4);
+    }
+    @keyframes nudge { to { transform: translate(5px, -4px); } }
+    .ig-box {
+      margin: 76px auto 0; max-width: 330px;
+      background: #fff; border-radius: 22px; padding: 22px 18px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35); text-align: center;
+    }
+    .ig-box h2 { margin: 0 0 12px; font-size: 19px; }
+    .ig-box a.action { background: var(--yellow); min-height: 54px; }
+    .ig-box p { margin: 12px 0 0; font-size: 13.5px; line-height: 1.5; color: #555; }
+
+    /* ---------- Fake voice-button popup ---------- */
+    .fake-modal {
+      display: none; position: fixed; inset: 0; z-index: 70;
+      align-items: center; justify-content: center;
+      padding: 22px;
+      background: rgba(20,18,10,.72);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+    .fake-modal.show { display: flex; }
+    .fake-dialog {
+      position: relative; width: min(100%, 350px);
+      padding: 28px 22px 22px;
+      border: 2px solid #17140a; border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 22px 70px rgba(0,0,0,.38), 8px 8px 0 var(--yellow);
+      text-align: center;
+      animation: pop-in .18s ease-out;
+    }
+    @keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(.96); } }
+    .fake-badge {
+      width: 52px; height: 52px; margin: 0 auto 14px;
+      display: grid; place-items: center;
+      border: 2px solid #17140a; border-radius: 50%;
+      background: var(--yellow);
+      font: 900 30px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .fake-dialog p { margin: 0; font-size: 19px; font-weight: 750; line-height: 1.38; }
+    .fake-dialog p strong { white-space: nowrap; }
+    .fake-close {
+      position: absolute; top: 9px; right: 10px;
+      width: 38px; min-height: 38px; padding: 0; border-radius: 50%;
+      background: transparent; color: #555;
+      font-size: 28px; font-weight: 400; line-height: 1;
+    }
+    .fake-ok {
+      width: 100%; min-height: 50px; margin-top: 20px; padding: 12px 16px;
+      border: 2px solid #17140a; border-radius: 14px;
+      background: var(--yellow); color: #17140a;
+      font-size: 16px;
+      box-shadow: 0 4px 0 #17140a;
+    }
+    .fake-ok:active { transform: translateY(2px); box-shadow: 0 2px 0 #17140a; }
+    @media (prefers-reduced-motion: reduce) { .fake-dialog { animation: none; } }
+    @media (max-width: 380px) {
+      main { padding-left: 12px; padding-right: 12px; }
+      .card { padding-left: 14px; padding-right: 14px; }
+      button, a.action { padding-left: 12px; padding-right: 12px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Shown only inside Instagram/Facebook in-app browser -->
+  <div id="ig" class="ig">
+    <div class="ig-arrow">↗</div>
+    <div class="ig-box">
+      <h2>Instagram открыл страницу в своём браузере</h2>
+      <a id="esc" class="action" href="#">Открыть в Safari</a>
+      <p>Если кнопка не сработала: нажми <b>•••</b> вверху справа → <b>«Открыть во внешнем браузере»</b></p>
+    </div>
+  </div>
+
+  <div id="fakeModal" class="fake-modal" aria-hidden="true">
+    <div class="fake-dialog" role="dialog" aria-modal="true" aria-labelledby="fakeMessage">
+      <button id="fakeClose" class="fake-close" type="button" aria-label="Закрыть">×</button>
+      <div class="fake-badge" aria-hidden="true">!</div>
+      <p id="fakeMessage">Прекратите сюда тыкать, себе тыкайте.<br>Это не тыкается тут. <strong>Данилов.</strong></p>
+      <button id="fakeOk" class="fake-ok" type="button">Понятно</button>
+    </div>
+  </div>
+
+  <main>
+    <section class="card">
+      <h1>Голосовое интервью. Юнг. Соционика</h1>
+      <a id="cta" class="action cta" href="https://chatgpt.com/" target="_blank" rel="noopener">
+        <img class="logo" src="chatgpt-icon.png" alt="" aria-hidden="true">
+        Открыть в ChatGPT app
+      </a>
+      <button id="copy" type="button">Скопировать промпт</button>
+      <div id="counter" class="counter"></div>
+
+      <div class="voice">
+        <div class="mockwrap">
+          <div class="mock">
+            <span class="plus">+</span>
+            <span class="ph">Ask ChatGPT</span>
+            <svg class="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+            <span id="fakeVoice" class="voicebtn" role="button" tabindex="0" aria-label="Пояснение о голосовой кнопке"><span></span><span></span><span></span><span></span></span>
+          </div>
+          <svg class="arrow" viewBox="0 0 40 48" aria-hidden="true">
+            <path d="M20 44 L20 16 M20 4 L10 20 M20 4 L30 20" fill="none" stroke="#f3c938" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 44 L20 16 M20 4 L10 20 M20 4 L30 20" fill="none" stroke="#17140a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".25"/>
+          </svg>
+        </div>
+        <p class="cap">Жёлтая кнопка с полосками — голосовой режим.<br>Если её нет — обнови ChatGPT.</p>
+      </div>
+    </section>
+  </main>
+
+  <script id="prompt" type="text/plain">IMPORTANT: Do not begin the interview immediately after receiving this message. Your first response must contain exactly this one sentence in Russian:
+
+«А теперь запусти голосовой режим, нажав жёлтую кнопку с тремя полосками справа от строки ввода».
+
+Do not add a greeting, explanation, list, or any other words. Begin the interview only after the user activates Voice Mode.
+
+Conduct a 40–60 minute voice interview with me entirely in Russian to estimate my likely socionic type, focusing primarily on the meaning and structure of my natural speech. Analyze how I reason, select criteria, explain causes, and evaluate people, possibilities, effectiveness, time, relationships, comfort, and pressure.
+
+Begin the voice interview with these exact words in Russian:
+
+«Привет! Сейчас мы проведём соционическое интервью. Я буду задавать по одному вопросу. Не торопись: я не буду перебивать, пока ты не скажешь “всё”. Готова?»
+
+Interview rules:
+
+1. Speak only Russian throughout the interview and correspondence.
+2. Ask one open-ended, non-leading question at a time and request specific real-life examples. Do not begin with difficult or abstract questions. Start with simple, approachable questions—for example, ask in Russian: «Считаете себя больше интровертом или экстравертом? Почему? Приведите пример». Increase the depth and complexity gradually so the interviewee is not intimidated at the start.
+3. Do not interrupt me until I say «всё». A pause does not mean that my answer is finished. During pauses, you may briefly acknowledge me with «ага», «интересно» or «понимаю».
+4. After each answer, briefly state which speech and meaning patterns you noticed, no more than three current hypotheses with approximate probabilities, and what still needs to be checked. Then ask the next question.
+5. Do not force my answers to fit the first hypothesis. Actively consider alternatives and try to disprove the leading hypothesis.
+6. Consider that my behaviour may also be influenced by my profession, upbringing, stress, burnout, social role, and life experience.
+7. Examine logic; intuition; emotions and relationships; willpower, pressure and competition; physical comfort and everyday behaviour; extraversion and introversion; rationality and irrationality.
+8. Do not reach a final conclusion until you have collected enough examples from different areas of my life. Before the conclusion, ask several questions that distinguish the leading hypothesis from its closest alternatives.
+9. Never use abbreviated socionic type codes such as ЛИЭ, ИЛИ, СЭЭ, СЛЭ, or any others.
+10. Every time you mention a type, write and say its full Russian name using this format: «полное название соционического типа, так называемый [псевдоним типа]». For example: «логико-интуитивный экстраверт, так называемый Джек Лондон». Follow this format in every intermediate hypothesis and in the final conclusion. Never use only the pseudonym.
+11. Keep your Russian clear and concise.
+12. Continue for approximately 40–60 minutes unless I ask you to finish earlier. If I do, proceed to the final assessment using the available information.
+
+At the end, provide in Russian: the primary estimated type and its approximate probability; the two closest alternatives; arguments supporting and contradicting the primary hypothesis; any ambiguous features; and your overall confidence level.
+
+Present the result as a working typological hypothesis, not as a scientific or medical diagnosis.</script>
+
+  <script>
+    (function () {
+      "use strict";
+      var promptText = document.getElementById('prompt').textContent.trim();
+      var copyBtn = document.getElementById('copy');
+      var cta = document.getElementById('cta');
+
+      // ---- 1. In-app browser (Instagram/Facebook webview) ----
+      var ua = navigator.userAgent || '';
+      var inApp = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\//i.test(ua);
+      var isIOS = /iPhone|iPad|iPod/i.test(ua);
+      if (inApp) {
+        var esc = document.getElementById('esc');
+        // Modern one-tap escape: x-safari-https:// (iOS 17+) / intent:// (Android)
+        if (location.protocol === 'https:') {
+          esc.href = isIOS
+            ? 'x-safari-' + location.href
+            : 'intent://' + location.host + location.pathname + location.search +
+              '#Intent;scheme=https;end';
+        } else {
+          esc.style.display = 'none';
+        }
+        document.getElementById('ig').classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      // ---- 2. ChatGPT link: prefills on web via ?q=; app needs paste ----
+      cta.href = 'https://chatgpt.com/?q=' + encodeURIComponent(promptText);
+
+      // ---- 3. Clipboard ----
+      function copyToClipboard() {
+        fallbackCopy();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(promptText).catch(function () {});
+        }
+        return Promise.resolve();
+      }
+      function fallbackCopy() {
+        var area = document.createElement('textarea');
+        area.value = promptText;
+        area.setAttribute('readonly', '');
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        area.setSelectionRange(0, area.value.length);
+        try { document.execCommand('copy'); } catch (e) {}
+        area.remove();
+      }
+
+      // ---- 4. Private click log in Google Sheets, proxied by the site worker ----
+      var COUNTER_ENDPOINT = '/api/didme-counter';
+      var COUNTED_KEY = 'didme-sheet-counted-v1';
+      var CLIENT_ID_KEY = 'didme-browser-id-v1';
+      var counterEl = document.getElementById('counter');
+
+      function render(n) {
+        if (typeof n === 'number' && !isNaN(n)) {
+          counterEl.innerHTML = 'Уже начало интервью <b>' + n + '</b> человек';
+        }
+      }
+      if (location.protocol === 'https:' || location.protocol === 'http:') {
+        fetch(COUNTER_ENDPOINT, { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) { if (d && typeof d.count === 'number') render(d.count); })
+          .catch(function () {});
+      }
+
+      function getCookie(name) {
+        var prefix = name + '=';
+        var parts = document.cookie ? document.cookie.split(';') : [];
+        for (var i = 0; i < parts.length; i++) {
+          var part = parts[i].trim();
+          if (part.indexOf(prefix) === 0) return decodeURIComponent(part.slice(prefix.length));
+        }
+        return '';
+      }
+      function setSharedCookie(name, value, maxAge) {
+        var domain = /(^|\.)thearena\.show$/i.test(location.hostname) ? '; Domain=.thearena.show' : '';
+        document.cookie = name + '=' + encodeURIComponent(value) + '; Max-Age=' + maxAge +
+          '; Path=/; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '') + domain;
+      }
+
+      function hasBeenCounted() {
+        if (getCookie(COUNTED_KEY) === '1') return true;
+        try { return localStorage.getItem(COUNTED_KEY) === '1'; }
+        catch (e) { return false; }
+      }
+      function markAsCounted() {
+        setSharedCookie(COUNTED_KEY, '1', 31536000);
+        try { localStorage.setItem(COUNTED_KEY, '1'); }
+        catch (e) {}
+      }
+      function clearCountedMark() {
+        setSharedCookie(COUNTED_KEY, '', 0);
+        try { localStorage.removeItem(COUNTED_KEY); }
+        catch (e) {}
+      }
+      function createClientId() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+        return 'didme-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      }
+      function getClientId() {
+        var id = getCookie(CLIENT_ID_KEY);
+        if (!id) {
+          try { id = localStorage.getItem(CLIENT_ID_KEY) || ''; }
+          catch (e) {}
+        }
+        if (!id) id = createClientId();
+        setSharedCookie(CLIENT_ID_KEY, id, 31536000);
+        try { localStorage.setItem(CLIENT_ID_KEY, id); }
+        catch (e) {}
+        return id;
+      }
+      function browserName() {
+        if (/Instagram/i.test(ua)) return 'Instagram in-app browser';
+        if (/FBAN|FBAV|FBIOS|FB_IAB/i.test(ua)) return 'Facebook in-app browser';
+        if (/EdgiOS|Edg\//i.test(ua)) return 'Microsoft Edge';
+        if (/CriOS|Chrome\//i.test(ua)) return 'Google Chrome';
+        if (/FxiOS|Firefox\//i.test(ua)) return 'Mozilla Firefox';
+        if (/Safari\//i.test(ua)) return 'Safari';
+        return 'Other';
+      }
+      function osName() {
+        if (/iPad/i.test(ua)) return 'iPadOS';
+        if (/iPhone|iPod/i.test(ua)) return 'iOS';
+        if (/Android/i.test(ua)) return 'Android';
+        if (/Windows/i.test(ua)) return 'Windows';
+        if (/Macintosh|Mac OS X/i.test(ua)) return 'macOS';
+        if (/Linux/i.test(ua)) return 'Linux';
+        return 'Other';
+      }
+      function deviceName() {
+        if (/iPad|Tablet/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua))) return 'Tablet';
+        if (/iPhone|iPod|Android.*Mobile/i.test(ua)) return 'Phone';
+        return 'Desktop';
+      }
+      function clickPayload() {
+        return {
+          clientId: getClientId(),
+          browser: browserName(),
+          os: osName(),
+          device: deviceName(),
+          language: navigator.language || '',
+          screen: window.screen.width + '×' + window.screen.height + ' @' + (window.devicePixelRatio || 1),
+          referrer: document.referrer || '',
+          pageUrl: location.href
+        };
+      }
+
+      // ---- 5. CTA: copy + log this browser once, then follow the real link ----
+      cta.addEventListener('click', function () {
+        copyToClipboard();
+        if (hasBeenCounted()) return;
+        markAsCounted();
+        try {
+          fetch(COUNTER_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(clickPayload()),
+            keepalive: true,
+            cache: 'no-store'
+          })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+              if (d && typeof d.count === 'number') render(d.count);
+              else if (!d || d.ok === false) clearCountedMark();
+            })
+            .catch(clearCountedMark);
+        } catch (e) { clearCountedMark(); }
+      });
+
+      // ---- 6. Manual copy ----
+      copyBtn.addEventListener('click', function () {
+        copyToClipboard();
+        copyBtn.textContent = 'Промпт скопирован ✓';
+        copyBtn.classList.add('copied');
+        setTimeout(function () {
+          copyBtn.textContent = 'Скопировать промпт';
+          copyBtn.classList.remove('copied');
+        }, 2500);
+      });
+
+      // ---- 7. The yellow control is only an illustration ----
+      var fakeVoice = document.getElementById('fakeVoice');
+      var fakeModal = document.getElementById('fakeModal');
+      var fakeClose = document.getElementById('fakeClose');
+      var fakeOk = document.getElementById('fakeOk');
+
+      function openFakeModal() {
+        fakeModal.classList.add('show');
+        fakeModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        fakeOk.focus();
+      }
+      function closeFakeModal() {
+        fakeModal.classList.remove('show');
+        fakeModal.setAttribute('aria-hidden', 'true');
+        if (!inApp) document.body.style.overflow = '';
+        fakeVoice.focus();
+      }
+      fakeVoice.addEventListener('click', openFakeModal);
+      fakeVoice.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openFakeModal();
+        }
+      });
+      fakeClose.addEventListener('click', closeFakeModal);
+      fakeOk.addEventListener('click', closeFakeModal);
+      fakeModal.addEventListener('click', function (event) {
+        if (event.target === fakeModal) closeFakeModal();
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && fakeModal.classList.contains('show')) closeFakeModal();
+      });
+    })();
+  </script>
+</body>
+</html>
